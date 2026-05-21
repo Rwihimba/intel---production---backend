@@ -22,6 +22,9 @@
     "url": "https://github.com/Rwihimba/intel---production---backend/issues"
   },
   "homepage": "https://github.com/Rwihimba/intel---production---backend#readme",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.1",
     "bullmq": "^5.76.10",
