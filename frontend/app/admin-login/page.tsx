@@ -1,15 +1,16 @@
 "use client";
 
+import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
 
-const ADMIN_DOMAIN = "alxafrica.com";
-
 const CALLBACK_ERRORS: Record<string, string> = {
-  domain: `Admin access requires an @${ADMIN_DOMAIN} Google Workspace account.`,
-  not_setup: "Your admin account could not be set up. Contact your system administrator.",
+  no_workspace:
+    "No INTEL workspace is associated with this email yet. Create one to get started.",
+  not_setup: "Your admin account could not be set up. Try again or contact support.",
+  wrong_role: "This account is not an admin. Use the team sign-in screen.",
   oauth: "Sign-in link was invalid or expired. Please request a new one.",
 };
 
@@ -36,18 +37,11 @@ function AdminLoginInner() {
   async function handleSendLink(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-
-    const domain = email.split("@")[1]?.toLowerCase();
-    if (domain !== ADMIN_DOMAIN) {
-      setError(`Admin access requires an @${ADMIN_DOMAIN} account.`);
-      return;
-    }
-
     setSending(true);
     const origin = window.location.origin;
     const { error: otpErr } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: `${origin}/auth/callback` },
+      options: { emailRedirectTo: `${origin}/auth/callback?intent=login` },
     });
     if (otpErr) {
       setError(otpErr.message);
@@ -90,13 +84,13 @@ function AdminLoginInner() {
             marginBottom: 20,
           }}
         >
-          INTEL · ALX Rwanda
+          INTEL · Admin
         </div>
 
         <div style={{ textAlign: "center" }}>
           <h1 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>Admin Sign In</h1>
           <p style={{ fontSize: 13, color: "var(--text2)", margin: "6px 0 22px" }}>
-            For @{ADMIN_DOMAIN} accounts only · we&apos;ll email you a sign-in link
+            Enter your admin email — we&apos;ll send you a one-time sign-in link.
           </p>
         </div>
 
@@ -152,7 +146,7 @@ function AdminLoginInner() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder={`name@${ADMIN_DOMAIN}`}
+                placeholder="name@yourcompany.com"
                 autoComplete="email"
                 required
               />
@@ -162,6 +156,15 @@ function AdminLoginInner() {
             </button>
           </form>
         )}
+
+        <div style={{ textAlign: "center", marginTop: 18 }}>
+          <Link
+            href="/admin-signup"
+            style={{ fontSize: 13, color: "var(--teal)", textDecoration: "none" }}
+          >
+            Don&apos;t have a workspace yet? Create one →
+          </Link>
+        </div>
       </div>
     </div>
   );

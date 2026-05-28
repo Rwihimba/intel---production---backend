@@ -7,6 +7,7 @@ import { authenticateUser } from './middleware/auth.middleware';
 import { errorHandler } from './middleware/errorHandler.middleware';
 import { requireAdmin } from './middleware/roleGuard.middleware';
 import { publicHealthRouter, authedHealthRouter } from './routes/health';
+import { publicAuthRouter, adminAuthRouter } from './routes/auth';
 import uploadsRouter from './routes/admin/uploads';
 import metricsRouter from './routes/admin/metrics';
 import dealsAdminRouter from './routes/admin/deals';
@@ -27,9 +28,14 @@ import { kigaliNow } from './utils/dateHelpers';
 const app = express();
 
 app.use(helmet());
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:3000',
+  'http://localhost:3100',
+].filter((o): o is string => Boolean(o));
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: allowedOrigins,
     credentials: true,
   })
 );
@@ -44,10 +50,12 @@ const limiter = rateLimit({
 app.use(limiter);
 
 app.use('/v1', publicHealthRouter);
+app.use('/v1', publicAuthRouter);
 
 app.use('/v1', authenticateUser);
 
 app.use('/v1', authedHealthRouter);
+app.use('/v1', adminAuthRouter);
 app.use('/v1', uploadsRouter);
 app.use('/v1', metricsRouter);
 app.use('/v1', dealsAdminRouter);
